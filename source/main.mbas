@@ -17,6 +17,5 @@ end
 
 function printCentered(row, text$)
     column = (TEXT_COLUMNS - len(text$)) / 2 + 1
-    print_at row, column; text$S
-    return
+    print_at row, column, text$
 end function
