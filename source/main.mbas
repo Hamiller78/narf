@@ -3,19 +3,66 @@ screen_background_color BLACK
 screen_text_color WHITE
 cls
 
+'Variables for text output queue
+const textQueueSize = 100
+dim textQueue$(textQueueSize, 39)
+dim textQueueRow(textQueueSize)
+dim textQueueColumn(textQueueSize)
+dim textQueueDelay(textQueueSize) ' We can use mod to create a delay effect for the text output
+textQueueIndex = -1
+
 printCentered(5, "Nuclear Attack")
 printCentered(7, "Reaction Failsafe")
 printCentered(9, "(N.A.R.F.)")
 
-printCentered(12, "Connecting to NORAD...")
+addToTextQueue(12, 1, 25, "Connecting to NORAD...")
 
-stoptime = jiffies() + 500
-while jiffies() < stoptime
-wend
+'main loop: add text output queue for telegraph effect
+repeat
+    printQueues()
+    key = key_code()
+until key <> 0
 
 end
 
 function printCentered(row, text$)
     column = (TEXT_COLUMNS - len(text$)) / 2 + 1
     print_at row, column, text$
+end function
+
+function addToTextQueue(row, column, delay, text$)
+    if textQueueIndex = textQueueSize - 1 then
+        'Queue is full, emergency flush one text to make room
+        print_at textQueueRow(textQueueIndex), textQueueColumn(textQueueIndex), textQueue$(textQueueIndex)
+        textQueueIndex = textQueueSize - 2
+    end if
+
+    textQueueIndex = textQueueIndex + 1
+    textQueueRow(textQueueIndex) = row
+    textQueueColumn(textQueueIndex) = column
+    textQueueDelay(textQueueIndex) = delay
+    textQueue$(textQueueIndex) = text$
+end function
+
+function printQueues()
+    for i = 0 to textQueueIndex
+        if textQueueIndex > -1 then
+            if jiffies() mod textQueueDelay(i) = 0 then
+                print_at textQueueRow(i), textQueueColumn(i), left$(textQueue$(i), 1) ' Print one character at a time
+                textQueue$(i) = mid$(textQueue$(i), 2) ' Remove the printed character from the string 
+                textQueueColumn(i) = textQueueColumn(i) + 1
+                if len(textQueue$(i)) = 0 then
+                    'Remove from queue
+                    for j = i to textQueueIndex - 1
+                        textQueueRow(j) = textQueueRow(j + 1)
+                        textQueueColumn(j) = textQueueColumn(j + 1)
+                        textQueueDelay(j) = textQueueDelay(j + 1)
+                        textQueue$(j) = textQueue$(j + 1)
+                    next j
+                    textQueueIndex = textQueueIndex - 1
+                    i = i - 1 ' Adjust index since we removed an item
+                end if
+            end if
+        end if
+    next i
 end function
