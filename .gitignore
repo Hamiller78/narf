@@ -1,2 +1,5 @@
 /build/
+/dist/
+/node_modules/
+*.tsbuildinfo
 tools.local.json
