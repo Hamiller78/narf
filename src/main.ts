@@ -8,6 +8,8 @@ if (!canvas) {
   throw new Error("Terminal canvas not found.");
 }
 
+await document.fonts.load('22px "Departure Mono"');
+
 const game = new Game();
 const input = new BrowserInput();
 const terminal = new Terminal(canvas);

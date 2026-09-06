@@ -1,7 +1,15 @@
+@font-face {
+  font-family: "Departure Mono";
+  src: url("/fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-display: block;
+  font-style: normal;
+  font-weight: 400;
+}
+
 :root {
   color-scheme: dark;
   background: #101010;
-  font-family: "Courier New", monospace;
+  font-family: "Departure Mono", monospace;
 }
 
 * {
@@ -35,5 +43,6 @@ canvas {
   border: 1px solid #555;
   background: #3333aa;
   image-rendering: pixelated;
+  touch-action: none;
   box-shadow: 0 18px 50px rgb(0 0 0 / 55%);
 }

@@ -12,6 +12,7 @@ interface Cell {
 export class Terminal {
   private readonly context: CanvasRenderingContext2D;
   private previous: Cell[] = [];
+  private readonly resizeObserver: ResizeObserver;
 
   public constructor(private readonly canvas: HTMLCanvasElement) {
     const context = canvas.getContext("2d");
@@ -19,7 +20,9 @@ export class Terminal {
       throw new Error("Canvas rendering is unavailable.");
     }
     this.context = context;
-    this.context.textBaseline = "middle";
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(canvas);
+    this.resize();
   }
 
   public draw(game: Game): void {
@@ -39,7 +42,8 @@ export class Terminal {
   private paint(screen: Cell[]): void {
     const cellWidth = this.canvas.width / TEXT_COLUMNS;
     const cellHeight = this.canvas.height / TEXT_ROWS;
-    this.context.font = `${Math.floor(cellHeight * 0.72)}px "Courier New", monospace`;
+    const fontSize = Math.max(11, Math.floor(cellHeight / 11) * 11);
+    this.context.font = `${fontSize}px "Departure Mono", monospace`;
     for (let index = 0; index < screen.length; index += 1) {
       const cell = screen[index];
       const old = this.previous[index];
@@ -51,9 +55,25 @@ export class Terminal {
       this.context.fillStyle = "#3333aa";
       this.context.fillRect(column * cellWidth, row * cellHeight, cellWidth + 1, cellHeight + 1);
       this.context.fillStyle = palette[cell.color];
-      this.context.fillText(cell.character, column * cellWidth + 2, row * cellHeight + cellHeight / 2 + 1);
+      this.context.fillText(cell.character, (column + 0.5) * cellWidth, row * cellHeight + cellHeight / 2 + 1);
     }
     this.previous = screen;
+  }
+
+  private resize(): void {
+    const bounds = this.canvas.getBoundingClientRect();
+    const pixelRatio = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.round(bounds.width * pixelRatio));
+    const height = Math.max(1, Math.round(bounds.height * pixelRatio));
+    if (this.canvas.width === width && this.canvas.height === height) {
+      return;
+    }
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.context.imageSmoothingEnabled = false;
+    this.context.textAlign = "center";
+    this.context.textBaseline = "middle";
+    this.previous = [];
   }
 }
 
