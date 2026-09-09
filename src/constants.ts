@@ -12,3 +12,5 @@ export const CHAT_SCROLL_ROWS = 5;
 export const REPORT_DELAY_MIN_SECONDS = 20;
 export const REPORT_DELAY_MAX_SECONDS = 60;
 export const EXAMPLE_MISSILE_SECONDS = 60;
+
+export const TEXT_CHARACTER_DELAY_MS = 40;

@@ -25,6 +25,10 @@ describe("Game", () => {
     game.update(idle);
     expect(game.secondsUntilReportedImpact()).toBe(40);
     expect(game.decision.active).toBe(true);
+    expect(game.chat.lines()[0]?.trim()).toBe("");
+    now += 2000;
+    game.update(idle);
+    expect(game.chat.lines()[1]?.trim()).toBe("ADVISOR: SELECT OUR RESPONSE");
     expect(game.chat.lines()[0]?.trim()).toBe("INCOMING MISSILE: WASHINGTON D.C.");
   });
 
@@ -48,11 +52,14 @@ describe("Game", () => {
     now = 100;
     game.update(idle);
     expect(game.decision.active).toBe(false);
+    now += 1000;
+    game.update(idle);
     expect(game.chat.lines()[0]?.trim()).toBe("NEW REPORT");
   });
 
   it("moves and selects a decision with latched controls", () => {
-    const game = new Game(() => 0);
+    let now = 0;
+    const game = new Game(() => now);
     game.decision.start(DecisionType.IncomingMissile);
     game.decision.update(idle);
     game.decision.update({ vertical: 1, fire: false, any: true });
@@ -61,6 +68,8 @@ describe("Game", () => {
     game.decision.update(idle);
     game.decision.update({ vertical: 0, fire: true, any: true });
     expect(game.decision.active).toBe(false);
+    now = 2000;
+    game.chat.update();
     expect(game.chat.lines()[0]?.trim()).toBe("SELECTED: LAUNCH ONE ICBM");
   });
 });

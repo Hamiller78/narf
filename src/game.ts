@@ -1,4 +1,4 @@
-import { EXAMPLE_MISSILE_SECONDS, REPORT_DELAY_MAX_SECONDS, REPORT_DELAY_MIN_SECONDS } from "./constants";
+import { TEXT_CHARACTER_DELAY_MS, EXAMPLE_MISSILE_SECONDS, REPORT_DELAY_MAX_SECONDS, REPORT_DELAY_MIN_SECONDS } from "./constants";
 import { GameClock } from "./clock";
 import { DecisionController } from "./decision";
 import { TextQueue } from "./textQueue";
@@ -7,8 +7,8 @@ import { DecisionType, WorldEventType, type ControlState, type ReportEvent, type
 export type GamePhase = "intro" | "wait-for-release" | "running";
 
 export class Game {
-  public readonly chat = new TextQueue();
-  public readonly decision = new DecisionController((text) => this.chat.add(text));
+  public readonly chat: TextQueue;
+  public readonly decision = new DecisionController((text) => this.chat.add(text, TEXT_CHARACTER_DELAY_MS));
   public readonly clock: GameClock;
 
   public phase: GamePhase = "intro";
@@ -27,6 +27,7 @@ export class Game {
     private readonly random: () => number = Math.random
   ) {
     this.clock = new GameClock(now);
+    this.chat = new TextQueue(now);
   }
 
   public update(control: ControlState): void {
@@ -46,6 +47,7 @@ export class Game {
     this.checkWorldEvents();
     this.checkReports();
     this.decision.update(control);
+    this.chat.update();
     this.currentTime = this.clock.takeUpdate() ?? this.currentTime;
   }
 
@@ -104,10 +106,10 @@ export class Game {
         return;
       }
       this.decision.cancel();
-      this.chat.add(report.text);
+      this.chat.add(report.text, TEXT_CHARACTER_DELAY_MS);
       if (report.impactTime !== undefined && report.impactTime > this.now()) {
         insertSorted(this.reportedImpactTimes, report.impactTime, (item) => item);
-        this.chat.add("ADVISOR: SELECT OUR RESPONSE");
+        this.chat.add("ADVISOR: SELECT OUR RESPONSE", TEXT_CHARACTER_DELAY_MS);
         this.decision.start(DecisionType.IncomingMissile);
       }
     }
